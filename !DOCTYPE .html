@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Pemahaman Teks Arab (Al-Arabiyyah Baina Yadaik)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .question-box {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-text {
+            font-family: "Traditional Arabic", "Amiri", serif;
+            font-size: 24px;
+            font-weight: bold;
+            direction: rtl;
+            text-align: right;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            flex-direction: row-reverse; /* Agar radio button ada di kanan untuk teks Arab */
+            align-items: center;
+            justify-content: flex-end;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* Styling untuk teks opsi Arab */
+        .ar-text {
+            font-family: "Traditional Arabic", "Amiri", serif;
+            font-size: 20px;
+            direction: rtl;
+            margin-right: 10px; /* Jarak dari radio button */
+            flex-grow: 1;
+            text-align: right;
+        }
+
+        input[type="radio"] {
+            transform: scale(1.2);
+            margin-left: 10px;
+        }
+
+        .btn-check {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .btn-check:hover {
+            background-color: #219150;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+        }
+
+        .correct {
+            color: #27ae60;
+            background-color: #e8f8f5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .incorrect {
+            color: #c0392b;
+            background-color: #fadbd8;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>Latihan Fahm al-Maqru'</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 25px;">Jawablah berdasarkan percakapan antara Ahmad dan Hassan.</p>
+    
+    <form id="quizForm">
+        <div id="questions-wrapper"></div>
+        
+        <button type="button" class="btn-check" onclick="checkAnswers()">Cek Jawaban</button>
+    </form>
+
+    <div id="final-score" class="score-display"></div>
+</div>
+
+<script>
+    // Data Soal (Objek)
+    const quizData = [
+        {
+            id: 1,
+            question: "أَيْنَ يَسْكُنُ حَسَّانُ؟",
+            options: [
+                "فِي حَيِّ الْجَامِعَة",
+                "فِي حَيِّ الْمَطَار",
+                "فِي مَكَّة"
+            ],
+            correctIndex: 1 // Indeks jawaban benar (mulai dari 0)
+        },
+        {
+            id: 2,
+            question: "أَيْنَ يَسْكُنُ أَحْمَدُ؟",
+            options: [
+                "فِي شَقَّة",
+                "فِي حَيِّ الْمَطَار",
+                "فِي حَيِّ الْجَامِعَة"
+            ],
+            correctIndex: 2
+        },
+        {
+            id: 3,
+            question: "هَلْ يَسْكُنُ حَسَّانُ فِي بَيْتٍ؟",
+            options: [
+                "نَعَمْ، هُوَ يَسْكُنُ فِي بَيْت",
+                "لَا، هُوَ يَسْكُنُ فِي شَقَّة",
+                "لَا، هُوَ يَسْكُنُ فِي الفُنْدُق"
+            ],
+            correctIndex: 1
+        },
+        {
+            id: 4,
+            question: "مَا رَقْمُ شَقَّةِ حَسَّانٍ؟",
+            options: [
+                "خَمْسَة (٥)",
+                "تِسْعَة (٩)",
+                "عَشَرَة (١٠)"
+            ],
+            correctIndex: 0
+        },
+        {
+            id: 5,
+            question: "مَا رَقْمُ بَيْتِ أَحْمَدَ؟",
+            options: [
+                "خَمْسَة (٥)",
+                "ثَلَاثَة (٣)",
+                "تِسْعَة (٩)"
+            ],
+            correctIndex: 2
+        }
+    ];
+
+    // Fungsi untuk merender soal ke HTML
+    function loadQuiz() {
+        const wrapper = document.getElementById('questions-wrapper');
+        
+        quizData.forEach((item, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.classList.add('question-box');
+            
+            // Buat HTML opsi jawaban
+            let optionsHTML = '';
+            item.options.forEach((opt, optIndex) => {
+                optionsHTML += `
+                    <label class="option-label">
+                        <span class="ar-text">${opt}</span>
+                        <input type="radio" name="q${index}" value="${optIndex}"> 
+                    </label>
+                `;
+            });
+
+            questionDiv.innerHTML = `
+                <div class="question-text">${index + 1}. ${item.question}</div>
+                <div class="options">${optionsHTML}</div>
+                <div id="feedback-${index}" class="feedback"></div>
+            `;
+            
+            wrapper.appendChild(questionDiv);
+        });
+    }
+
+    // Fungsi Cek Jawaban
+    function checkAnswers() {
+        let score = 0;
+        
+        quizData.forEach((item, index) => {
+            const selected = document.querySelector(`input[name="q${index}"]:checked`);
+            const feedbackDiv = document.getElementById(`feedback-${index}`);
+            
+            // Reset feedback style
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.className = 'feedback'; 
+
+            if (!selected) {
+                feedbackDiv.textContent = "Silakan pilih jawaban terlebih dahulu.";
+                feedbackDiv.classList.add('incorrect');
+            } else {
+                const answer = parseInt(selected.value);
+                if (answer === item.correctIndex) {
+                    score++;
+                    feedbackDiv.textContent = "Ahsant! Jawaban Benar (صَحِيْح).";
+                    feedbackDiv.classList.add('correct');
+                } else {
+                    feedbackDiv.textContent = "Jawaban Salah (خَطَأ). Jawaban yang benar adalah: " + item.options[item.correctIndex];
+                    feedbackDiv.classList.add('incorrect');
+                }
+            }
+        });
+
+        // Tampilkan skor akhir
+        const finalScoreDiv = document.getElementById('final-score');
+        finalScoreDiv.style.display = 'block';
+        finalScoreDiv.innerHTML = `<strong>Skor Anda: ${score} / ${quizData.length}</strong>`;
+        
+        // Scroll ke bawah untuk melihat hasil
+        finalScoreDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Jalankan fungsi load saat halaman dibuka
+    window.onload = loadQuiz;
+
+</script>
+
+</body>
+</html>
